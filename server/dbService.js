@@ -18,6 +18,7 @@ connection.connect((err) => {
     // console.log('db ' + connection.state);
 });
 
+
 class DbService {
     static getDbServiceInstance() {
         return instance ? instance : new DbService();
@@ -33,34 +34,89 @@ class DbService {
                     resolve(results);
                 })
             });
-            // console.log(response)
+            // console.log(response);
             return response;
-
         } catch (error) {
             console.log(error);
         }
     }
 
-    async insertNewName(name) {
+
+    async insertNewBrand(brand) {
         try {
             const dateAdded = new Date();
             const insertId = await new Promise((resolve, reject) => {
-                const query = "INSERT INTO names (name, date_added) VALUES (?,?);";
+                const query = "INSERT INTO names (brand, date_added) VALUES (?,?);";
 
-                connection.query(query, [name, dateAdded] , (err, result) => {
+                connection.query(query, [brand, dateAdded] , (err, result) => {
                     if (err) reject(new Error(err.message));
                     resolve(result.insertId);
                 })
             });
             return {
                 id : insertId,
-                name : name,
+                brand : brand,
                 dateAdded : dateAdded
             };
         } catch (error) {
             console.log(error);
         }
     }
+
+    async deleteRowById(id) {
+        try {
+            id = parseInt(id, 10); 
+            const response = await new Promise((resolve, reject) => {
+                const query = "DELETE FROM names WHERE id = ?";
+    
+                connection.query(query, [id] , (err, result) => {
+                    if (err) reject(new Error(err.message));
+                    resolve(result.affectedRows);
+                })
+            });
+    
+            return response === 1 ? true : false;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    }
+
+    async updateBrandById(id, brand) {
+        try {
+            id = parseInt(id, 10); 
+            const response = await new Promise((resolve, reject) => {
+                const query = "UPDATE names SET brand = ? WHERE id = ?";
+    
+                connection.query(query, [brand, id] , (err, result) => {
+                    if (err) reject(new Error(err.message));
+                    resolve(result.affectedRows);
+                })
+            });
+    
+            return response === 1 ? true : false;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    }
+
+    async searchByBrand(brand) {
+        try {
+            const response = await new Promise((resolve, reject) => {
+                const query = "SELECT * FROM names WHERE brand = ?;";
+
+                connection.query(query, [brand], (err, results) => {
+                    if (err) reject(new Error(err.message));
+                    resolve(results);
+                })
+            });
+
+            return response;
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
 
-module.exports = DbService; 
+module.exports = DbService;
